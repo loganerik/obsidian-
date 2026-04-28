@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Los Angeles — The Locked City</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/noir.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Top bar -->
+    <header id="topbar">
+      <div id="topbar-left">
+        <span class="logo-city">LOS ANGELES</span>
+        <span class="logo-sub">The Locked City &mdash; A Development Record, 1900&ndash;Present</span>
+      </div>
+      <div id="topbar-right">
+        <button class="pill-btn active" data-view="map">MAP</button>
+        <button class="pill-btn" data-view="laws">LAWS</button>
+        <button class="pill-btn" data-view="calculator">CALCULATOR</button>
+        <button class="pill-btn" data-view="about">ABOUT</button>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <div id="layout">
+
+      <!-- Left sidebar -->
+      <aside id="sidebar-left">
+
+        <!-- Timeline -->
+        <section class="panel" id="timeline-panel">
+          <div class="panel-header">
+            <span class="panel-title">HISTORICAL RECORD</span>
+            <span class="panel-year" id="timeline-year-display">2024</span>
+          </div>
+          <div class="timeline-track-wrap">
+            <input type="range" id="timeline-slider" min="1900" max="2024" value="2024" step="1" />
+            <div class="timeline-markers">
+              <span>1900</span><span>1930</span><span>1960</span><span>1990</span><span>2024</span>
+            </div>
+          </div>
+          <div id="timeline-events" class="timeline-events"></div>
+        </section>
+
+        <!-- Layer controls -->
+        <section class="panel" id="layers-panel">
+          <div class="panel-header"><span class="panel-title">MAP LAYERS</span></div>
+          <div class="layer-group">
+            <label class="layer-toggle">
+              <input type="checkbox" id="layer-zoning" checked />
+              <span class="toggle-track"></span>
+              <span class="layer-label">Zoning</span>
+            </label>
+            <label class="layer-toggle">
+              <input type="checkbox" id="layer-historic" />
+              <span class="toggle-track"></span>
+              <span class="layer-label">Historic Overlays (HPOZ)</span>
+            </label>
+            <label class="layer-toggle">
+              <input type="checkbox" id="layer-transit" />
+              <span class="toggle-track"></span>
+              <span class="layer-label">Transit Corridors</span>
+            </label>
+            <label class="layer-toggle">
+              <input type="checkbox" id="layer-fire" />
+              <span class="toggle-track"></span>
+              <span class="layer-label">Fire Hazard Zones</span>
+            </label>
+            <label class="layer-toggle">
+              <input type="checkbox" id="layer-redline" />
+              <span class="toggle-track"></span>
+              <span class="layer-label">1939 Redlining Map</span>
+            </label>
+          </div>
+          <div class="zoning-legend" id="zoning-legend">
+            <div class="legend-title">ZONING KEY</div>
+            <div class="legend-row"><span class="swatch sfr"></span>Single-Family (SFR)</div>
+            <div class="legend-row"><span class="swatch mfr"></span>Multi-Family (MFR)</div>
+            <div class="legend-row"><span class="swatch commercial"></span>Commercial</div>
+            <div class="legend-row"><span class="swatch mixed"></span>Mixed Use</div>
+            <div class="legend-row"><span class="swatch industrial"></span>Industrial</div>
+            <div class="legend-row"><span class="swatch open"></span>Open Space / Public</div>
+          </div>
+        </section>
+
+        <!-- Active law counter -->
+        <section class="panel" id="law-count-panel">
+          <div class="panel-header"><span class="panel-title">ACTIVE RESTRICTIONS</span></div>
+          <div class="stat-grid">
+            <div class="stat-cell">
+              <div class="stat-num" id="stat-federal">—</div>
+              <div class="stat-label">Federal</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num" id="stat-state">—</div>
+              <div class="stat-label">State</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num" id="stat-local">—</div>
+              <div class="stat-label">Local</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num" id="stat-private">—</div>
+              <div class="stat-label">Private/CC&amp;R</div>
+            </div>
+          </div>
+          <div class="suppression-bar-wrap">
+            <div class="suppression-label">ESTIMATED DEVELOPMENT SUPPRESSION</div>
+            <div class="suppression-bar-outer">
+              <div class="suppression-bar-inner" id="suppression-bar" style="width:0%"></div>
+            </div>
+            <div class="suppression-pct" id="suppression-pct">—</div>
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- Map container -->
+      <main id="map-container">
+        <div id="map"></div>
+
+        <!-- Map overlay: zip search -->
+        <div id="zip-search-bar">
+          <input type="text" id="zip-input" placeholder="Enter ZIP code or neighborhood…" maxlength="10" />
+          <button id="zip-go">GO</button>
+        </div>
+
+        <!-- Map overlay: selected zip info badge -->
+        <div id="zip-badge" class="hidden">
+          <div class="badge-zip" id="badge-zip-num">—</div>
+          <div class="badge-name" id="badge-zip-name">—</div>
+          <div class="badge-density" id="badge-zip-density">—</div>
+        </div>
+      </main>
+
+      <!-- Right sidebar -->
+      <aside id="sidebar-right">
+
+        <!-- ZIP detail panel (shown on click) -->
+        <section class="panel" id="zip-detail-panel">
+          <div class="panel-header">
+            <span class="panel-title" id="zip-panel-title">SELECT A ZIP CODE</span>
+          </div>
+          <div id="zip-detail-content">
+            <p class="hint-text">Click any neighborhood on the map to explore its development history, current restrictions, and suppressed potential.</p>
+          </div>
+        </section>
+
+        <!-- Reform toggles -->
+        <section class="panel" id="reform-panel">
+          <div class="panel-header">
+            <span class="panel-title">REFORM SIMULATOR</span>
+            <button class="reset-btn" id="reform-reset">RESET</button>
+          </div>
+          <div id="reform-list"></div>
+          <div class="reform-totals">
+            <div class="reform-total-row">
+              <span>Est. New Units Unlocked</span>
+              <span class="reform-total-val" id="reform-units">0</span>
+            </div>
+            <div class="reform-total-row">
+              <span>Est. GDP Impact</span>
+              <span class="reform-total-val" id="reform-gdp">$0B</span>
+            </div>
+            <div class="reform-total-row">
+              <span>Est. Jobs Created</span>
+              <span class="reform-total-val" id="reform-jobs">0</span>
+            </div>
+          </div>
+          <div class="formula-note">
+            Formula: suppressed units × reform feasibility × construction value × BEA 1.6× multiplier.
+            <a href="#" id="show-formula">See methodology →</a>
+          </div>
+        </section>
+
+        <!-- Law browser -->
+        <section class="panel" id="law-panel">
+          <div class="panel-header">
+            <span class="panel-title">LAW BROWSER</span>
+            <select id="law-filter-level" class="mini-select">
+              <option value="all">All Levels</option>
+              <option value="federal">Federal</option>
+              <option value="state">State</option>
+              <option value="local">Local</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+          <input type="text" class="law-search" id="law-search" placeholder="Search laws…" />
+          <div id="law-list"></div>
+        </section>
+
+      </aside>
+
+    </div><!-- /layout -->
+
+    <!-- Full-screen modals -->
+    <div id="modal-overlay" class="hidden">
+      <div id="modal-box">
+        <button id="modal-close">×</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
