@@ -126,8 +126,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── 4. Init timeline ───────────────────────────────────────────────────────
-  const slider        = document.getElementById('timeline-slider')
-  const yearDisplay   = document.getElementById('timeline-year-display')
+  const slider          = document.getElementById('timeline-slider')
+  const yearDisplay     = document.getElementById('timeline-year-display')
   const eventsContainer = document.getElementById('timeline-events')
 
   initTimeline({
@@ -139,9 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       state.currentYear = year
       state.activeLaws  = activeLaws
       updateSidebar({
-        activeLaws,
-        activeReforms: getActiveReforms(),
+        laws: LAWS,
         year,
+        activeReforms: getActiveReforms(),
       })
     },
   })
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 
   // ── 6. Init sidebar ────────────────────────────────────────────────────────
-  initSidebar()
+  initSidebar({ laws: LAWS, year: state.currentYear })
 
   // ── 7. Init calculator ────────────────────────────────────────────────────
   initCalculator({
@@ -171,9 +171,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     showModal,
     onReformChange(_activeReforms, _impact) {
       updateSidebar({
-        activeLaws:   state.activeLaws,
-        activeReforms: getActiveReforms(),
+        laws:         LAWS,
         year:         state.currentYear,
+        activeReforms: getActiveReforms(),
       })
     },
   })
